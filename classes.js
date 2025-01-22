@@ -9,12 +9,12 @@ class Blob {
   init() {
     for (let l = 0; l < layers; l++) {
       this.points[l] = [];
-      let r = this.r * spzMin + (this.r / layers) * l; //define radius per layer
+      let r = this.r * (1 - (l / layers)); // diminish radius per layer
 
       for (let a = 0; a < 360; a += 360 / res) {
         let x = cos(a) * r + this.center.x;
         let y = sin(a) * r + this.center.y;
-        let z = l;
+        let z = l*heightDist; // z is the layer times distance
         let v = new Point(x, y, z);
         this.points[l].push(v);
       }
@@ -32,13 +32,8 @@ class Blob {
   show() {
     for (let l = 0; l < layers; l++) {
       beginShape();
-      let c = 255 - (255 / layers) * (l - 1);
-
-      fill(c);
       for (let p of this.points[l]) {
-        //g.vertices.push(p.pos.x, p.pos.y, 1);
-        vertex(p.pos.x, p.pos.y, l * 20);
-        //  vertex(p.pos.x, p.pos.y, (l - 1) * 20);
+        vertex(p.pos.x, p.pos.y);
       }
       endShape(CLOSE);
     }
