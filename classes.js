@@ -1,28 +1,44 @@
 class Blob {
-  constructor(x, y, r) {
+  constructor(x, y) {
     this.center = createVector(x, y);
-    this.r = r;
     this.points = [];
-    this.init();
+    this.layers = 0;
+    this.spawn();
   }
 
-  init() {
-    for (let l = 0; l < layers; l++) {
-      this.points[l] = [];
-      let r = this.r * (1 - l / layers); // diminish radius per layer
+  spawn() {
+    console.log("spawn");
+    this.points[this.layers] = [];
+    let x, y, z;
+    if (this.layers == 0) {
+      x = this.center.x;
+      y = this.center.y;
+      z = this.layers * heightDist; // z is the layer times distance
+    } else {
+      let xSum = 0;
+      let ySum = 0;
+      //console.log(this.points[this.layers - 1]);
+      for (let p of this.points[this.layers - 1]) {
+        xSum += p.pos.x;
 
-      for (let a = 0; a < 360; a += 360 / res) {
-        let x = cos(a) * r + this.center.x;
-        let y = sin(a) * r + this.center.y;
-        let z = l * heightDist; // z is the layer times distance
-        let v = new Point(x, y, z);
-        this.points[l].push(v);
+        ySum += p.pos.y;
       }
+      x = xSum / res;
+      y = ySum / res;
     }
+    for (let a = 0; a < TWO_PI; a += TWO_PI / res) {
+      let v = new Point(x, y, z, a);
+      this.points[this.layers].push(v);
+    }
+
+    this.layers++;
   }
 
   move() {
-    for (let l = 0; l < layers; l++) {
+    if (frameCount % 200 == 0) {
+      this.spawn();
+    }
+    for (let l = 0; l < this.layers; l++) {
       for (let p of this.points[l]) {
         p.move();
       }
@@ -33,7 +49,7 @@ class Blob {
     if (renderer === "webgl") {
       push();
       translate(-width / 2, -height / 2, 0); // Adjust for WebGL centering
-      for (let l = 0; l < layers; l++) {
+      for (let l = 0; l < this.layers; l++) {
         beginShape();
         for (let p of this.points[l]) {
           vertex(p.pos.x, p.pos.y, p.pos.z);
@@ -43,7 +59,7 @@ class Blob {
       pop();
     } else {
       push();
-      for (let l = 0; l < layers; l++) {
+      for (let l = 0; l < this.layers; l++) {
         beginShape();
         for (let p of this.points[l]) {
           vertex(p.pos.x, p.pos.y);
@@ -56,11 +72,12 @@ class Blob {
 }
 
 class Point {
-  constructor(x, y, z) {
+  constructor(x, y, z, angle) {
     this.pos = createVector(x, y, z);
-    this.dir = createVector(0, 0);
+    this.radiate = p5.Vector.fromAngle(angle, radiateMag);
+    this.rad = radiateMag;
     this.a;
-    this.spd = 1;
+    this.spd = spd;
     this.v = p5.Vector.fromAngle(this.a);
     this.v.mult(spd);
   }
@@ -79,36 +96,23 @@ class Point {
         TWO_PI
       ) * mult;
     this.v = p5.Vector.fromAngle(this.a);
-    this.v.mult(spd);
-    this.pos.add(this.v);
-  }
-}
+    this.v.setMag(this.spd);
+    // adjust magnitude;
+    this.radiate.setMag(this.rad);
 
-class Plane {
-  constructor(x1, x2, z1, z2, h) {
-    // this.pos = createVector(x, y, z);
-    this.x1 = x1;
-    this.x2 = x2;
-    this.y1 = 0;
-    this.y2 = h;
-    this.z1 = z1;
-    this.z2 = z2;
-  }
-
-  show() {
-    if (renderer === "webgl") {
-      push();
-      stroke(0);
-      fill(255);
-
-      beginShape();
-      vertex(this.x1, this.y1, this.z1); //topleft
-      vertex(this.x2, this.y1, this.z2); //toprigjt
-      vertex(this.x2, this.y2, this.z2); //boittom
-      vertex(this.x1, this.y2, this.z1); //toprigjt
-
-      endShape(CLOSE);
-      pop();
+    this.rad -= 0.0001;
+    if (this.rad < 0) {
+      this.rad = 0;
     }
+    this.v.add(this.radiate);
+
+    this.v.div(2);
+    if (this.pos.x < wall.x || this.pos.x > wall.x + wall.w) {
+      this.v.x *= -1;
+    }
+    if (this.pos.y < wall.y || this.pos.y > wall.y + wall.h) {
+      this.v.y *= -1;
+    }
+    this.pos.add(this.v);
   }
 }
