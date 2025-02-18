@@ -1,57 +1,68 @@
-// field params
-let noiseScale = 0.0015; // scale of the noise
-let mult = 3; // multiplier for the noise
-let nSeed = 55;
-
-//let spd = 1; // speed of the blob points
-
-//blob placement
-let maxBlobs = 40; // Limit the number of blobs to prevent excessive calculations
-let angleIncrement = 40; // Angle increment for the spiral
-let radiusIncrement = 0.15; // Radius increment for the spiral, 0 to 1, 1 being the full radius of the wall
-let maxJitter = 70; // jitter for the blob points
-
-//blob params
-let layers = 5;
-let res = 100; // number of points in the blob
-let heightDist = 10; // distance between layers
-let r; // radius of the blob/ determined in initializeBlobs relative to wall / pixel size
-
-let timestep = 35; // number of steps to run simulate before displaying
-
 let blobs = []; // holds geometries
+let r; // radius of the blob/ determined in initializeBlobs relative to wall / pixel size
 let wall;
+let t = 0;
 
 function setup() {
-  canvas = createCanvas(windowWidth, windowHeight, SVG);
+  canvas = createCanvas(2544, 1352, SVG);
   angleMode(DEGREES);
-  noiseSeed(nSeed);
-  randomSeed(18);
+  noiseSeed(params.nSeed);
+  randomSeed(params.rSeed);
   initializeWall();
   initializeBlobs();
+
+  // Create a button to save the SVG
+  let saveButton = createButton("Save SVG");
+  saveButton.position(width / 2, wall.h + wall.y);
+  saveButton.mousePressed(saveSVG);
+
+  // Create a button to load global variables from JSON
+  let resetButton = createButton("Reset Sim");
+  resetButton.position(saveButton.x + saveButton.width, wall.h + wall.y);
+  resetButton.mousePressed(resetSim);
 }
 
 function draw() {
   angleMode(RADIANS);
   drawWall();
-  noFill();
 
   for (let b of blobs) {
+    noFill();
     b.move();
     b.show();
   }
 
-  fill(255);
-  text(frameCount, 10, 10);
-
-  if (frameCount > timestep) {
+  if (t > params.timestep) {
+    for (let b of blobs) {
+      noFill();
+      b.show();
+    }
     noLoop();
-    // save("blob.svg");
   }
+  push();
+  fill(255);
+  text(
+    "step " + (t - 1) + "/" + params.timestep + " | numBlobs: " + blobs.length,
+    width / 2,
+    wall.y - 10
+  );
+
+  pop();
+  t++;
+}
+
+function resetSim() {
+  t = 0;
+  blobs = [];
+  angleMode(DEGREES);
+  initializeBlobs();
+
+  redraw();
+  loop();
 }
 
 function initializeBlobs() {
-  r = wall.h / 15; // max size for the blob should be 16 x 18",
+  r = wall.h / 18; // max size for the blob should be 16 x 18"
 
   let centerX = wall.x + wall.w / 2;
   let centerY = wall.y + wall.h / 2;
@@ -59,8 +70,8 @@ function initializeBlobs() {
   let maxRadiusX = wall.w / 2;
   let maxRadiusY = wall.h / 2;
 
-  let radiusIncrementX = radiusIncrement * maxRadiusX;
-  let radiusIncrementY = radiusIncrement * maxRadiusY;
+  let radiusIncrementX = params.radiusIncrement * maxRadiusX;
+  let radiusIncrementY = params.radiusIncrement * maxRadiusY;
 
   let radiusX = 0;
   let radiusY = 0;
@@ -68,11 +79,11 @@ function initializeBlobs() {
   let angle = 0;
   let totalBlobs = 0;
 
-  while (radiusX < maxRadiusX && totalBlobs < maxBlobs) {
+  while (radiusX < maxRadiusX && totalBlobs < params.maxBlobs) {
     let x = radiusX * cos(angle) + centerX;
     let y = radiusY * sin(angle) + centerY;
-    x += random(-maxJitter, maxJitter);
-    y += random(-maxJitter, maxJitter);
+    x += random(-params.maxJitter, params.maxJitter);
+    y += random(-params.maxJitter, params.maxJitter);
     // Ensure the blob is within the wall boundaries
     if (
       x - r >= wall.x &&
@@ -90,15 +101,15 @@ function initializeBlobs() {
       }
 
       if (!overlap) {
-        let b = new Blob(x, y, r, res);
+        let b = new Blobby(x, y, r, params.res);
         blobs.push(b);
         totalBlobs++;
       }
     }
 
-    angle += angleIncrement;
-    radiusX += radiusIncrementX * (angleIncrement / 360); // Increase radius gradually to create a spiral
-    radiusY += radiusIncrementY * (angleIncrement / 360); // Increase radius gradually to create a spiral
+    angle += params.angleIncrement;
+    radiusX += radiusIncrementX * (params.angleIncrement / 360); // Increase radius gradually to create a spiral
+    radiusY += radiusIncrementY * (params.angleIncrement / 360); // Increase radius gradually to create a spiral
   }
 
   console.log(blobs);

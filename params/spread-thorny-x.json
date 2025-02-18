@@ -1,0 +1,15 @@
+{
+  "noiseScale": 0.0038,
+  "mult": 2,
+  "nSeed": 22,
+  "zMult": 2,
+  "timestep": 25,
+  "maxBlobs": 38,
+  "angleIncrement": 40,
+  "radiusIncrement": 0.13,
+  "maxJitter": 50,
+  "rSeed": 14,
+  "layers": 5,
+  "zHeight": 10,
+  "res": 100
+}
