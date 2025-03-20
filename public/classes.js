@@ -1,31 +1,21 @@
 class Blobby {
-  constructor(x, y, r, res) {
-    this.center = createVector(x, y);
-    this.points = [];
-
+  constructor(points) {
+    this.points = points;
     this.r = r;
     this.rDist = this.r / params.layers;
     this.spawn();
   }
 
   spawn() {
-    for (let l = 1; l < params.layers + 1; l++) {
-      this.points[l - 1] = [];
-      for (let a = 0; a < 360; a += 360 / params.res) {
-        let x = this.center.x + sin(a) * this.rDist * l;
-        let y = this.center.y + cos(a) * this.rDist * l * (18 / 20);
-        let z = (params.zHeight / params.layers) * l;
-        let v = new Point(x, y, z, a);
-        this.points[l - 1].push(v);
-      }
+    for (let i = 0; i < this.points.length; i++) {
+      let point = new Point(this.points[i]);
+      this.points[i] = point;
     }
   }
-
   move() {
-    for (let l = 0; l < params.layers; l++) {
-      for (let p of this.points[l]) {
-        p.move();
-      }
+    //for (let l = 0; l < params.layers; l++) {
+    for (let p of this.points) {
+      p.move();
     }
   }
 
@@ -33,20 +23,20 @@ class Blobby {
     push();
     stroke(255);
     strokeWeight(1);
-    for (let l = 0; l < params.layers; l++) {
-      beginShape();
-      for (let p of this.points[l]) {
-        vertex(p.pos.x, p.pos.y);
-      }
-      endShape(CLOSE);
+    // for (let l = 0; l < params.layers; l++) {
+    beginShape();
+    for (let p of this.points) {
+      vertex(p.pos.x, p.pos.y);
     }
+    endShape(CLOSE);
+    //   }
     pop();
   }
 }
 
 class Point {
-  constructor(x, y, z, angle) {
-    this.pos = createVector(x, y, z);
+  constructor(point) {
+    this.pos = createVector(point.x, point.y, point.z);
     this.a;
     this.v = p5.Vector.fromAngle(this.a);
   }

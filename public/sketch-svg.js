@@ -1,17 +1,33 @@
 let wall;
 let blobs = [];
 
+let phrase = "POST TENEBRAS LUX"; // Dummy phrase to start
+let font;
+
+let xOffset = 0; // Horizontal offset for the first letter (to be set later)
+let yOffset = 0; // Vertical position for the letters (to be set later)
+
+function preload() {
+  font = loadFont("/fonts/Documan-Heavy.otf"); // Default font
+}
+
 function setup() {
   let w = windowWidth;
   let h = (w * 9) / 44;
-  canvas = createCanvas(w, h, SVG);
+  canvas = createCanvas(w, h);
+
+  textSize(params.fontSize);
+  xOffset = width / 2 - textWidth(phrase) / 2; // Center the text horizontally
+  yOffset = height / 2 + params.fontSize / 2; // Center the text vertically
+
   noFill();
   angleMode(DEGREES);
   noiseSeed(params.nSeed);
   randomSeed(params.rSeed);
+  textFont(font);
   createInterface();
 
-  show();
+  show(); // calls initialize Blobs and shows them
 }
 
 function createInterface() {
@@ -63,21 +79,23 @@ function createParameterControl(key, value, yOffset) {
     valueLabel.position(310, yOffset);
     valueLabel.style("color", "white"); // Set text color to white
 
-    // Update the parameter value and the value label when the slider changes
+    // Update the parameter value, the value label, and reset the simulation when the slider changes
     slider.input(() => {
       params[key] = slider.value();
       valueLabel.html(`${slider.value()}`); // Update the value label
       console.log(`${key} updated to:`, params[key]);
+      resetSim(); // Reset the simulation
     });
   } else if (typeof value === "string") {
     let input = createInput(value);
     input.position(100, yOffset);
     input.style("width", "200px");
 
-    // Update the parameter value when the input changes
+    // Update the parameter value and reset the simulation when the input changes
     input.input(() => {
       params[key] = input.value();
       console.log(`${key} updated to:`, params[key]);
+      resetSim(); // Reset the simulation
     });
   }
 }
