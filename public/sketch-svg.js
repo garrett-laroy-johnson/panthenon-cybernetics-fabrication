@@ -1,5 +1,12 @@
 let wall;
 let blobs = [];
+let controls = {};
+let paramRanges; // Will store the JSON data with min/max/step
+
+function preload() {
+  // Loads the JSON before setup() runs
+  paramRanges = loadJSON("paramRanges.json");
+}
 
 function setup() {
   let w = windowWidth;
@@ -42,44 +49,62 @@ function createInterface() {
 }
 
 function createParameterControl(key, value, yOffset) {
-  // Create a label for the parameter
   let label = createDiv(`${key}:`);
   label.position(10, yOffset);
-  label.style("color", "white"); // Set text color to white
+  label.style("color", "white");
 
-  // Create a slider or input field based on the type of value
+  // If we have numeric ranges defined for this key in paramRanges, use them
   if (typeof value === "number") {
-    let slider = createSlider(
-      value > 1 ? 0 : 0.001, // Min value (adjust for small numbers)
-      value > 1 ? value * 2 : 0.1, // Max value (adjust for small numbers)
-      value, // Initial value
-      value > 1 ? 1 : 0.001 // Step size
-    );
+    let rangeData = paramRanges[key] || {};
+    let minVal = rangeData.min ?? (value > 1 ? 0 : 0.002);
+    let maxVal = rangeData.max ?? (value > 1 ? value * 2 : 0.2);
+    let stepVal = rangeData.step ?? (value > 1 ? 1 : 0.002);
+
+    let slider = createSlider(minVal, maxVal, value, stepVal);
     slider.position(100, yOffset);
     slider.style("width", "200px");
 
-    // Create a dynamic value label next to the slider
     let valueLabel = createDiv(`${value}`);
     valueLabel.position(310, yOffset);
-    valueLabel.style("color", "white"); // Set text color to white
+    valueLabel.style("color", "white");
 
-    // Update the parameter value and the value label when the slider changes
     slider.input(() => {
       params[key] = slider.value();
-      valueLabel.html(`${slider.value()}`); // Update the value label
-      console.log(`${key} updated to:`, params[key]);
+      valueLabel.html(`${slider.value()}`);
     });
+
+    controls[key] = { slider, valueLabel };
   } else if (typeof value === "string") {
     let input = createInput(value);
     input.position(100, yOffset);
     input.style("width", "200px");
-
-    // Update the parameter value when the input changes
     input.input(() => {
       params[key] = input.value();
-      console.log(`${key} updated to:`, params[key]);
     });
+
+    controls[key] = { input };
   }
+}
+
+// Call this after loading JSON to refresh your UI:
+function updateParameterControls() {
+  for (let key in params) {
+    if (controls[key]?.slider) {
+      controls[key].slider.value(params[key]);
+      controls[key].valueLabel.html(`${params[key]}`);
+    } else if (controls[key]?.input) {
+      controls[key].input.value(params[key]);
+    }
+  }
+}
+
+// ...in your loadJSONFile callback...
+function loadJSONFile(filePath) {
+  loadJSON(filePath, (data) => {
+    Object.assign(params, data);
+    updateParameterControls(); // Update UI
+    show();
+  });
 }
 
 function show() {
@@ -99,6 +124,8 @@ function resetSim() {
   t = 0;
   blobs = [];
   angleMode(DEGREES);
+  noiseSeed(params.nSeed);
+  randomSeed(params.rSeed);
   initializeBlobs();
   show();
   //loop();

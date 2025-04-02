@@ -9,14 +9,19 @@ class Blobby {
   }
 
   spawn() {
-    for (let l = 1; l < params.layers + 1; l++) {
-      this.points[l - 1] = [];
-      for (let a = 0; a < 360; a += 360 / params.res) {
-        let x = this.center.x + sin(a) * this.rDist * l;
-        let y = this.center.y + cos(a) * this.rDist * l * (18 / 20);
-        let z = (params.zHeight / params.layers) * l;
-        let v = new Point(x, y, z, a);
-        this.points[l - 1].push(v);
+    for (let l = 1; l <= params.layers; l++) {
+      // If l is in the skipped range (after the outermost layer), skip it
+      if (l < params.layers && l >= params.layers - params.skippedLayers) {
+        this.points[l - 1] = [];
+      } else {
+        this.points[l - 1] = [];
+        for (let a = 0; a < 360; a += 360 / params.res) {
+          let x = this.center.x + sin(a) * this.rDist * l;
+          let y = this.center.y + cos(a) * this.rDist * l * (18 / 20);
+          let z = (params.zHeight / params.layers) * l;
+          let v = new Point(x, y, z, a);
+          this.points[l - 1].push(v);
+        }
       }
     }
   }

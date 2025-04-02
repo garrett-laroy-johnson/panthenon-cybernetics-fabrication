@@ -1,0 +1,72 @@
+{
+  "noiseScale": {
+    "min": 0,
+    "max": 0.01,
+    "step": 0.0001
+  },
+  "mult": {
+    "min": 1,
+    "max": 10,
+    "step": 1
+  },
+  "nSeed": {
+    "min": 0,
+    "max": 9999,
+    "step": 1
+  },
+  "zMult": {
+    "min": 1,
+    "max": 10,
+    "step": 1
+  },
+  "timestep": {
+    "min": 1,
+    "max": 100,
+    "step": 1
+  },
+  "maxBlobs": {
+    "min": 36,
+    "max": 36,
+    "step": 1
+  },
+  "angleIncrement": {
+    "min": 0,
+    "max": 360,
+    "step": 1
+  },
+  "radiusIncrement": {
+    "min": 0,
+    "max": 1,
+    "step": 0.01
+  },
+  "maxJitter": {
+    "min": 0,
+    "max": 200,
+    "step": 1
+  },
+  "rSeed": {
+    "min": 0,
+    "max": 9999,
+    "step": 1
+  },
+  "layers": {
+    "min": 1,
+    "max": 50,
+    "step": 1
+  },
+  "zHeight": {
+    "min": 0,
+    "max": 50,
+    "step": 1
+  },
+  "res": {
+    "min": 10,
+    "max": 1000,
+    "step": 10
+  },
+  "skippedLayers": {
+    "min": 0,
+    "max": 20,
+    "step": 1
+  }
+}

@@ -13,4 +13,7 @@ const params = {
   layers: 5,
   zHeight: 10,
   res: 100, // number of points in the blob
+  skippedLayers: 5, // new param
 };
+
+//// filepath: c:\Users\garre\OneDrive\Documents\_PRACTICE\2024\chaosmotic-cybernetics\panthenon-cybernetics-fabrication\public\paramRanges.json
